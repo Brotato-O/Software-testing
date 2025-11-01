@@ -1,60 +1,65 @@
--- phpMyAdmin SQL Dump
--- version 5.2.1
--- https://www.phpmyadmin.net/
---
--- Máy chủ: 127.0.0.1
--- Thời gian đã tạo: Th10 28, 2025 lúc 08:45 AM
--- Phiên bản máy phục vụ: 10.4.32-MariaDB
--- Phiên bản PHP: 8.2.12
+-- ===================================================
+-- Setup Database TEST - Software Testing Assignment
+-- ===================================================
+-- Database: test
+-- User: hbstudent / hbstudent
+-- Tables: users, products
+-- ===================================================
 
-SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
-START TRANSACTION;
-SET time_zone = "+00:00";
+-- Tạo database
+CREATE DATABASE IF NOT EXISTS test CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
+-- Tạo user và cấp quyền
+CREATE USER IF NOT EXISTS 'hbstudent'@'localhost' IDENTIFIED BY 'hbstudent';
+GRANT ALL PRIVILEGES ON test.* TO 'hbstudent'@'localhost';
+FLUSH PRIVILEGES;
 
-/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
-/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
-/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!40101 SET NAMES utf8mb4 */;
+-- Sử dụng database
+USE test;
 
---
--- Cơ sở dữ liệu: `quanlysanpham`
---
-
--- --------------------------------------------------------
-
---
--- Cấu trúc bảng cho bảng `products`
---
-
-CREATE TABLE `products` (
-  `ID` int(11) NOT NULL,
-  `DESCRIPTION` varchar(256) NOT NULL,
-  `NAME` varchar(256) NOT NULL,
-  `PRICE` int(11) NOT NULL
+-- ===================================================
+-- Bảng USERS - Cho login authentication
+-- ===================================================
+DROP TABLE IF EXISTS users;
+CREATE TABLE users (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  username VARCHAR(50) NOT NULL UNIQUE,
+  password VARCHAR(100) NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Chỉ mục cho các bảng đã đổ
---
+-- Thêm dữ liệu test users
+-- Note: Password plain text (trong thực tế nên hash)
+INSERT INTO users (username, password) VALUES
+('testuser', 'Test123'),
+('admin', 'Admin123'),
+('john.doe', 'John123');
 
---
--- Chỉ mục cho bảng `products`
---
-ALTER TABLE `products`
-  ADD PRIMARY KEY (`ID`);
+-- ===================================================
+-- Bảng PRODUCTS - Cho product CRUD
+-- ===================================================
+DROP TABLE IF EXISTS products;
+CREATE TABLE products (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(256) NOT NULL,
+  description VARCHAR(256),
+  price DOUBLE NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- AUTO_INCREMENT cho các bảng đã đổ
---
+-- Thêm dữ liệu mẫu products
+INSERT INTO products (name, description, price) VALUES
+('Laptop Dell XPS 13', 'Laptop cao cấp, màn hình 13 inch', 1299.99),
+('iPhone 15 Pro', 'Điện thoại thông minh mới nhất', 999.99),
+('Samsung Galaxy S24', 'Flagship Android phone', 849.99);
 
---
--- AUTO_INCREMENT cho bảng `products`
---
-ALTER TABLE `products`
-  MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT;
-COMMIT;
+-- ===================================================
+-- Kiểm tra dữ liệu
+-- ===================================================
+SELECT 'USERS TABLE:' as '';
+SELECT * FROM users;
 
-/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
-/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
-/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+SELECT 'PRODUCTS TABLE:' as '';
+SELECT * FROM products;
+
+SELECT 'ALL TABLES:' as '';
+SHOW TABLES;

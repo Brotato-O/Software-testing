@@ -16,6 +16,16 @@ public class LoginRequest {
     @Pattern(regexp = "^(?=.*[A-Za-z])(?=.*\\d).+$", message = "Password must contain both letters and numbers")
     private String password;
 
+    // Default constructor
+    public LoginRequest() {
+    }
+
+    // Constructor with parameters (for testing)
+    public LoginRequest(String username, String password) {
+        this.username = username;
+        this.password = password;
+    }
+
     public String getUsername() {
         return username;
     }
