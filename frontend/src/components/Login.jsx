@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { login } from '../services/api';
-import { validateLogin } from '../utils/validation';
+import { validatePassword, validateUsername } from '../utils/validation';
 
 const Login = ({ onLoginSuccess }) => {
     const [formData, setFormData] = useState({
@@ -28,11 +28,21 @@ const Login = ({ onLoginSuccess }) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         const { username, password } = formData;
+        console.log('Submitting login for:', username, password);
 
         // Client-side validation
-        const validation = validateLogin(username, password);
-        if (!validation.isValid) {
-            setErrors(validation.errors);
+        const validateUsernameResult= validateUsername(username);
+        const validatePasswordResult= validatePassword(password);
+
+        const validation = validatePasswordResult.isValid && validateUsernameResult.isValid;
+        console.log("valid", validation);
+        if (!validation) {
+            setErrors(
+                {
+                    username: validateUsernameResult.error,
+                    password: validatePasswordResult.error
+                }
+            );
             return;
         }
 

@@ -86,3 +86,59 @@ export const validatePassword = (password) => {
         error: ''
     };
 };
+
+export const validateProduct = (product) => {
+    // Kiểm tra xem product có hợp lệ không
+    if (!product) {
+        return {
+            isValid: false,
+            error: 'Product data is missing'
+        };
+    }
+
+    // --- 1. Kiểm tra tên sản phẩm ---
+    if (!product.name || product.name.trim() === '') {
+        return {
+            isValid: false,
+            error: 'Product name is required'
+        };
+    }
+
+    const trimmedName = product.name.trim();
+    if (trimmedName.length < 3 || trimmedName.length > 100) {
+        return {
+            isValid: false,
+            error: 'Product name must be between 3 and 100 characters'
+        };
+    }
+
+    // --- 2. Kiểm tra giá sản phẩm ---
+    if (product.price === undefined || product.price === null || product.price === '') {
+        return {
+            isValid: false,
+            error: 'Product price is required'
+        };
+    }
+
+    const priceValue = Number(product.price);
+    if (isNaN(priceValue) || priceValue <= 0) {
+        return {
+            isValid: false,
+            error: 'Product price must be a positive number'
+        };
+    }
+
+    // --- 3. Kiểm tra mô tả (nếu có) ---
+    if (product.description && product.description.trim().length > 500) {
+        return {
+            isValid: false,
+            error: 'Product description must not exceed 500 characters'
+        };
+    }
+
+    // --- 4. Hợp lệ ---
+    return {
+        isValid: true,
+        error: ''
+    };
+};
