@@ -92,7 +92,7 @@ export const validateProduct = (product) => {
     if (!product) {
         return {
             isValid: false,
-            error: 'Product data is missing'
+            errors: 'Product data is missing'
         };
     }
 
@@ -100,7 +100,7 @@ export const validateProduct = (product) => {
     if (!product.name || product.name.trim() === '') {
         return {
             isValid: false,
-            error: 'Product name is required'
+            errors: 'Product name is required'
         };
     }
 
@@ -108,7 +108,7 @@ export const validateProduct = (product) => {
     if (trimmedName.length < 3 || trimmedName.length > 100) {
         return {
             isValid: false,
-            error: 'Product name must be between 3 and 100 characters'
+            errors: 'Product name must be between 3 and 100 characters'
         };
     }
 
@@ -116,7 +116,7 @@ export const validateProduct = (product) => {
     if (product.price === undefined || product.price === null || product.price === '') {
         return {
             isValid: false,
-            error: 'Product price is required'
+            errors: 'Product price is required'
         };
     }
 
@@ -124,7 +124,7 @@ export const validateProduct = (product) => {
     if (isNaN(priceValue) || priceValue <= 0) {
         return {
             isValid: false,
-            error: 'Product price must be a positive number'
+            errors: 'Product price must be a positive number'
         };
     }
 
@@ -132,13 +132,13 @@ export const validateProduct = (product) => {
     if (product.description && product.description.trim().length > 500) {
         return {
             isValid: false,
-            error: 'Product description must not exceed 500 characters'
+            errors: 'Product description must not exceed 500 characters'
         };
     }
 
     // --- 4. Hợp lệ ---
     return {
         isValid: true,
-        error: ''
+        errors: ''
     };
 };
