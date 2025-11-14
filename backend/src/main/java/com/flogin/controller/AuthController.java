@@ -19,16 +19,26 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<Map<String, String>> login(@Valid @RequestBody LoginRequest loginRequest) {
-        LoginRequest login= new LoginRequest(
-                loginRequest.getUsername(),
-                loginRequest.getPassword());
-        LoginResponse isAuthenticated = authService.authenticate(login);
+    public ResponseEntity<LoginResponse> login(
+            @Valid @RequestBody LoginRequest loginRequest) {
 
-        if (isAuthenticated.isSuccess()) {
-            return ResponseEntity.ok(Map.of("message", "Login successful"));
-        } else {
-            return ResponseEntity.status(401).body(Map.of("message", "Invalid credentials"));
+        LoginResponse res = authService.authenticate(loginRequest);
+
+        // ❗ Lỗi validation → BAD REQUEST (400)
+        if (!res.isSuccess() &&
+                (res.getMessage().contains("required")
+                        || res.getMessage().contains("must")
+                        || res.getMessage().contains("only"))) {
+            return ResponseEntity.badRequest().body(res);
         }
+
+        // ❗ Sai username hoặc password → 401
+        if (!res.isSuccess()) {
+            return ResponseEntity.status(401).body(res);
+        }
+
+        // ✔ Đăng nhập thành công → 200
+        return ResponseEntity.ok(res);
     }
+
 }
