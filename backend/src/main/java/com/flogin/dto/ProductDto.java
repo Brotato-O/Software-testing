@@ -16,6 +16,17 @@ public class ProductDto {
     @Positive(message = "Price must be positive")
     private Double price;
 
+    public ProductDto() {
+    }
+
+    public ProductDto(Long id, @NotBlank(message = "Product name is required") String name, String description,
+            @NotNull(message = "Price is required") @Positive(message = "Price must be positive") Double price) {
+        this.id = id;
+        this.name = name;
+        this.description = description;
+        this.price = price;
+    }
+
     public Long getId() {
         return id;
     }

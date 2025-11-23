@@ -1,4 +1,4 @@
-package com.flogin.service;
+package com.flogin.controller;
 
 import com.flogin.controller.AuthController;
 import com.flogin.dto.LoginRequest;
