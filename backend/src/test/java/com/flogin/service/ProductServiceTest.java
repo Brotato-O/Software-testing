@@ -27,10 +27,12 @@ class ProductServiceTest {
     @Test
     @DisplayName("TC1: Tạo sản phẩm mới thành công")
     void testCreateProduct() {
-        // Constructor: ProductDto(String name, Double price, Integer quantity, String category)
+        // Constructor: ProductDto(String name, Double price, Integer quantity, String
+        // category)
         ProductDto productDto = new ProductDto("Laptop", 15000000.0, 10, "Electronics");
-        
-        // Constructor: Product(Long id, String name, Double price, Integer quantity, String category)
+
+        // Constructor: Product(Long id, String name, Double price, Integer quantity,
+        // String category)
         Product product = new Product(1L, "Laptop", 15000000.0, 10, "Electronics");
 
         when(productRepository.save(any(Product.class))).thenReturn(product);
@@ -91,7 +93,7 @@ class ProductServiceTest {
         List<Product> products = new ArrayList<>();
         products.add(new Product(1L, "Laptop", 15000000.0, 10, "Electronics"));
         products.add(new Product(2L, "Mouse", 500000.0, 20, "Electronics"));
-        
+
         Page<Product> page = new PageImpl<>(products);
         when(productRepository.findAll(any(Pageable.class))).thenReturn(page);
 
@@ -111,7 +113,7 @@ class ProductServiceTest {
         List<Product> products = new ArrayList<>();
         products.add(new Product(1L, "Laptop", 15000000.0, 10, "Electronics"));
         products.add(new Product(2L, "Mouse", 500000.0, 20, "Electronics"));
-        
+
         when(productRepository.findAll()).thenReturn(products);
 
         List<ProductDto> result = productService.getAllProducts();
@@ -139,7 +141,7 @@ class ProductServiceTest {
     @DisplayName("TC8: Cập nhật sản phẩm - Không tìm thấy")
     void testUpdateProductNotFound() {
         ProductDto productDto = new ProductDto("Laptop", 10000.0, 5, "Electronics");
-        
+
         when(productRepository.findById(999L)).thenReturn(Optional.empty());
 
         Exception exception = assertThrows(RuntimeException.class, () -> {

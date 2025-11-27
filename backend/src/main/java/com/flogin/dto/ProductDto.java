@@ -18,7 +18,8 @@ public class ProductDto {
 
     private String category;
 
-    public ProductDto() {}
+    public ProductDto() {
+    }
 
     public ProductDto(String name, Double price, Integer quantity, String category) {
         this.name = name;
