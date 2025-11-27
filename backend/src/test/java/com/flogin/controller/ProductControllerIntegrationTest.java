@@ -136,21 +136,9 @@ class ProductControllerIntegrationTest {
                                 .content(objectMapper.writeValueAsString(updatedProduct)))
                                 .andExpect(status().isOk())
                                 .andExpect(jsonPath("$.id").value(productId))
-                                .andExpect(jsonPath("$.name").value("Laptop Updated"));
+                                .andExpect(jsonPath("$.name").value("LaptopUpdated"));
         }
 
-        // @Test
-        // @DisplayName("DELETE /api/products/{id} - Xoa san pham thanh cong")
-        // void testDeleteProduct_Success() throws Exception {
-        // Long productId = 1L;
-        // // In ra productService để kiểm tra mock có inject được không
-        // System.out.println(productService);
-        // // Mock service không làm gì, chỉ để controller gọi được
-        // doNothing().when(productService).deleteProduct(anyLong());
-
-        // mockMvc.perform(delete("/api/products/{id}", productId))
-        // .andExpect(status().isOk());
-        // }
         @Test
         @DisplayName("DELETE /api/products/{id} - Xoa san pham thanh cong")
         void testDeleteProduct_Success() throws Exception {
@@ -167,8 +155,7 @@ class ProductControllerIntegrationTest {
         @DisplayName("PUT /api/products/{id} - Cap nhat san pham khong ton tai")
         void testUpdateProduct_NotFound() throws Exception {
                 Long nonExistentId = 999L;
-                ProductDto updatedProduct = new ProductDto(nonExistentId, "Non-existent Product", "No description",
-                                0.0);
+                ProductDto updatedProduct = new ProductDto(nonExistentId, "nonexistentProduct", "No description", 10.0);
 
                 when(productService.updateProduct(any(Long.class), any(ProductDto.class)))
                                 .thenThrow(new RuntimeException("Product not found"));
