@@ -3,7 +3,7 @@
 // ========================================
 // Áp dụng TDD (Test-Driven Development) approach
 
-import { validatePassword } from '../utils/validation';
+import { validatePassword } from '../utils/validatePassword';
 
 describe('validatePassword() - Unit Tests (2 điểm)', () => {
 
