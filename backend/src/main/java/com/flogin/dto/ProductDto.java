@@ -16,6 +16,31 @@ public class ProductDto {
     @Positive(message = "Price must be positive")
     private Double price;
 
+    private String category;
+
+    public ProductDto() {}
+
+    public ProductDto(String name, Double price, Integer quantity, String category) {
+        this.name = name;
+        this.price = price;
+        this.category = category;
+    }
+
+    public ProductDto(Long id, String name, Double price, Integer quantity, String category) {
+        this.id = id;
+        this.name = name;
+        this.price = price;
+        this.category = category;
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
+    }
+
     public Long getId() {
         return id;
     }

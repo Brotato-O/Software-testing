@@ -1,6 +1,7 @@
 package com.flogin.controller;
 
 import com.flogin.dto.LoginRequest;
+import com.flogin.dto.LoginResponse;
 import com.flogin.service.AuthService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,14 +20,20 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<Map<String, String>> login(@Valid @RequestBody LoginRequest loginRequest) {
-        boolean isAuthenticated = authService.authenticate(
-                loginRequest.getUsername(),
-                loginRequest.getPassword());
-
-        if (isAuthenticated) {
-            return ResponseEntity.ok(Map.of("message", "Login successful"));
+        // Gọi authenticate với LoginRequest object
+        LoginResponse response = authService.authenticate(loginRequest);
+        
+        if (response.isSuccess()) {
+            // Trả về thành công kèm token
+            return ResponseEntity.ok(Map.of(
+                "message", response.getMessage(),
+                "token", response.getToken()
+            ));
         } else {
-            return ResponseEntity.status(401).body(Map.of("message", "Invalid credentials"));
+            // Trả về lỗi 401 với message
+            return ResponseEntity.status(401).body(Map.of(
+                "message", response.getMessage()
+            ));
         }
     }
 }
