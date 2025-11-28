@@ -13,7 +13,8 @@ describe('Login Component', () => {
     //kiểm tra không nhập
     test ('Emty input fileds', async ()=>{
         axios.post.mockResolvedValueOnce({ data: { success: true } });
-        render(<Login onLoginSuccess={true} />);
+        const mockSuccess = jest.fn();
+        render(<Login onLoginSuccess={mockSuccess} />); 
         
         const submitButton = screen.getByRole('button');
         fireEvent.click(submitButton);
@@ -29,7 +30,8 @@ describe('Login Component', () => {
 
     //kiểm tra nhập thiếu độ dài
     test ('Invalid input fields', async ()=>{
-        render(<Login onLoginSuccess={true} />);
+        const mockSuccess = jest.fn();
+        render(<Login onLoginSuccess={mockSuccess} />); 
 
         const usernameInput = screen.getByLabelText('Username');
         const passwordInput = screen.getByLabelText('Password');
@@ -48,7 +50,8 @@ describe('Login Component', () => {
 
     //kiểm tra nhập kí tự đặc biệt
     test ('Invalid special characters in username', async ()=>{
-        render(<Login onLoginSuccess={true} />);
+        const mockSuccess = jest.fn();
+        render(<Login onLoginSuccess={mockSuccess} />); 
 
         const usernameInput = screen.getByLabelText('Username');
         const passwordInput = screen.getByLabelText('Password');
@@ -66,7 +69,8 @@ describe('Login Component', () => {
 
     //kiểm tra nhập đúng
     test ('Valid input fields', async ()=>{
-        render(<Login onLoginSuccess={true} />);
+        const mockSuccess = jest.fn();
+        render(<Login onLoginSuccess={mockSuccess} />); 
 
         const usernameInput = screen.getByLabelText('Username');
         const passwordInput = screen.getByLabelText('Password');
@@ -90,6 +94,7 @@ describe('Login Component', () => {
     test ('Login failed from server', async ()=>{
         apiModule.login.mockRejectedValueOnce({ message: 'An error occurred' });
         const mockOnLoginSuccess = jest.fn();
+        const mockLogin= jest.spyOn(apiModule, 'login');
         render(<Login onLoginSuccess={mockOnLoginSuccess} />);
 
         const usernameInput = screen.getByLabelText('Username');
@@ -101,8 +106,8 @@ describe('Login Component', () => {
         fireEvent.click(submitButton);
 
         const serverError = await screen.findByText('An error occurred');
-        screen.debug();
         await waitFor(() => {
+            expect(mockLogin).toHaveBeenCalledWith('wronguser', 'WrongPass123');
             expect(serverError).toBeInTheDocument()
         });
     });
@@ -111,6 +116,7 @@ describe('Login Component', () => {
     test ('Login successful from server', async ()=>{
         apiModule.login.mockResolvedValueOnce({data: { success: true } });
         const mockOnLoginSuccess = jest.fn();
+        const mockLogin= jest.spyOn(apiModule, 'login');
         render(<Login onLoginSuccess={mockOnLoginSuccess} />);
 
         const usernameInput = screen.getByLabelText('Username');
@@ -120,10 +126,10 @@ describe('Login Component', () => {
         fireEvent.change(usernameInput, {target: {value: 'correctuser'}});
         fireEvent.change(passwordInput, {target: {value: 'CorrectPass123'}});
         fireEvent.click(submitButton);
-        
 
         await waitFor(() => {
-            expect(serverSuccess).toBeInTheDocument()
+            expect(mockLogin).toHaveBeenCalledWith('correctuser', 'CorrectPass123');
+            expect(mockOnLoginSuccess).toHaveBeenCalled();
         });
     });
 })
