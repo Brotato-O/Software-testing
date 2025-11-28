@@ -20,15 +20,20 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<Map<String, String>> login(@Valid @RequestBody LoginRequest loginRequest) {
-        LoginRequest login= new LoginRequest(
-                loginRequest.getUsername(),
-                loginRequest.getPassword());
-        LoginResponse isAuthenticated = authService.authenticate(login);
-
-        if (isAuthenticated.isSuccess()) {
-            return ResponseEntity.ok(Map.of("message", "Login successful"));
+        // Gọi authenticate với LoginRequest object
+        LoginResponse response = authService.authenticate(loginRequest);
+        
+        if (response.isSuccess()) {
+            // Trả về thành công kèm token
+            return ResponseEntity.ok(Map.of(
+                "message", response.getMessage(),
+                "token", response.getToken()
+            ));
         } else {
-            return ResponseEntity.status(401).body(Map.of("message", "Invalid credentials"));
+            // Trả về lỗi 401 với message
+            return ResponseEntity.status(401).body(Map.of(
+                "message", response.getMessage()
+            ));
         }
     }
 }
