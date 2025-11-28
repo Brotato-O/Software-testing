@@ -123,7 +123,7 @@ describe('Login Component', () => {
         
 
         await waitFor(() => {
-            expect(mockOnLoginSuccess).toHaveBeenCalled();
+            expect(serverSuccess).toBeInTheDocument()
         });
     });
 })
