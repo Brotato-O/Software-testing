@@ -44,7 +44,7 @@ describe("ProductList Component Integration", () => {
         const addBtn = screen.getByRole('button', { name: "Add Product" });
         fireEvent.click(addBtn);
 
-        const error = await screen.findByText('Product name is required');
+        const error = await screen.findByText('Ten san pham khong duoc de trong');
         expect(error).toBeInTheDocument();
     })
 
@@ -58,8 +58,24 @@ describe("ProductList Component Integration", () => {
         fireEvent.change(nameInput, { target: { value: 'ab' } }); //tên quá ngắn
         fireEvent.click(addBtn);
 
-        const nameError = await screen.findByText('Product name must be between 3 and 100 characters');
+        const nameError = await screen.findByText('Ten san pham phai co it nhat 3 ky tu');
         expect(nameError).toBeInTheDocument();
+    });
+
+    test("create new products with empty price", async () => {
+        const mockOnLogout = jest.fn();
+        render(<Products onLogout={mockOnLogout} />);
+
+        const addBtn = screen.getByRole('button', { name: "Add Product" });
+        const nameInput = screen.getByLabelText('Product Name *');
+        const priceInput = screen.getByLabelText('Price ($) *');
+
+        fireEvent.change(nameInput, { target: { value: 'Valid Product' } });
+        fireEvent.change(priceInput, { target: { value: '' } });
+        fireEvent.click(addBtn);
+
+        const priceError = await screen.findByText('Gia san pham khong duoc de trong');
+        expect(priceError).toBeInTheDocument();
     });
 
     test("create new products with negative price", async () => {
@@ -74,14 +90,11 @@ describe("ProductList Component Integration", () => {
         fireEvent.change(priceInput, { target: { value: -10 } });
         fireEvent.click(addBtn);
 
-        const priceError = await screen.findByText('Product price must be a positive number');
+        const priceError = await screen.findByText('Gia san pham phai lon hon 0');
         expect(priceError).toBeInTheDocument();
     });
 
     test("Create new products with valid data", async () => {
-        const mockOnLogout = jest.fn();
-        render(<Products onLogout={mockOnLogout} />);
-
         // Mock API trước khi thực hiện submit
         apiModule.createProduct.mockResolvedValue({
             id: 1,
@@ -92,6 +105,9 @@ describe("ProductList Component Integration", () => {
         apiModule.getProducts.mockResolvedValue([
             { id: 1, name: "New Product", price: 50 }
         ]);
+
+        const mockOnLogout = jest.fn();
+        render(<Products onLogout={mockOnLogout} />);
 
         const addBtn = screen.getByRole('button', { name: "Add Product" });
         const nameInput = screen.getByLabelText('Product Name *');
@@ -118,17 +134,21 @@ describe("ProductList Component Integration", () => {
         const editBtn = await screen.findByTitle('Edit');
         fireEvent.click(editBtn);
         const nameInput = screen.getByLabelText('Product Name *');
+        const priceInput = screen.getByLabelText('Price ($) *');
         fireEvent.change(nameInput, {
             target: {
                 value: ''
             }
         }); //tên để trống
+        fireEvent.change(priceInput, { target: { value: '' } });
 
         const saveBtn = screen.getByRole('button', { name: /Update Product/i });
         fireEvent.click(saveBtn);
 
-        const nameError = await screen.findByText('Product name is required');
+        const nameError = await screen.findByText('Ten san pham khong duoc de trong');
+        const priceError = await screen.findByText('Gia san pham khong duoc de trong');
         expect(nameError).toBeInTheDocument();
+        expect(priceError).toBeInTheDocument();
     });
 
     //test edit sản phẩm với valid data
@@ -137,25 +157,30 @@ describe("ProductList Component Integration", () => {
             { id: 1, name: "Laptop", description: "Gaming laptop", price: 1000 },
         ];
         jest.spyOn(apiModule, "getProducts").mockResolvedValue(mockProducts);
-        const mockOnLogout = jest.fn();
-        render(<Products onLogout={mockOnLogout} />);
-        const editBtn = await screen.findByTitle('Edit');
-        fireEvent.click(editBtn);
-        const nameInput = screen.getByLabelText('Product Name *');
-        fireEvent.change(nameInput, { target: { value: 'Updated Laptop' } });
         // Mock API trước khi thực hiện submit
-        apiModule.updateProduct.mockResolvedValue({
+        jest.spyOn(apiModule, "updateProduct").mockResolvedValue({
             id: 1,
             name: "Updated Laptop",
+            description: "Gaming laptop",
             price: 1000
         });
         apiModule.getProducts.mockResolvedValue([
             { id: 1, name: "Updated Laptop", price: 1000 }
         ]);
+
+        const mockOnLogout = jest.fn();
+        render(<Products onLogout={mockOnLogout} />);
+
+        const editBtn = await screen.findByTitle('Edit');
+        fireEvent.click(editBtn);
+        const nameInput = screen.getByLabelText('Product Name *');
+        fireEvent.change(nameInput, { target: { value: 'Updated Laptop' } });
+
         const saveBtn = screen.getByRole('button', { name: /Update Product/i });
         fireEvent.click(saveBtn);
 
         // Kiểm tra UI
+
         const updatedProduct = await screen.findByText('Updated Laptop');
         expect(updatedProduct).toBeInTheDocument();
     });

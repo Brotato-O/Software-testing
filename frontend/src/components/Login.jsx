@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { login } from '../services/api';
-import { validatePassword, validateUsername } from '../utils/validation';
+import { validateUsername } from '../utils/validateUsername';
+import { validatePassword } from '../utils/validatePassword';
 
 const Login = ({ onLoginSuccess }) => {
     const [formData, setFormData] = useState({
