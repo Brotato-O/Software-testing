@@ -16,7 +16,7 @@
     "dev": "react-scripts start",
     "start": "react-scripts start",
     "build": "react-scripts build",
-    "test": "react-scripts test",
+    "test": "react-scripts test --coverage",
     "eject": "react-scripts eject",
     "test:unit": "CI=true react-scripts test --coverage --watchAll=false",
     "test:unit:login": "react-scripts test --testPathPattern=Login --watchAll=false --coverage",
@@ -54,4 +54,10 @@
     "serve": "^14.0.1",
     "jest-junit": "^13.0.0"
   }
+  },
+  "jest": {
+  "transformIgnorePatterns": [
+    "node_modules/(?!axios)/"
+  ]
+}
 }

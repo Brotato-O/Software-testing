@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { getProducts, createProduct, updateProduct, deleteProduct } from '../services/api';
-import { validateProduct } from '../utils/validation';
+import { validateProduct } from '../utils/validateProduct';
 
 const Products = ({ onLogout }) => {
     const [products, setProducts] = useState([]);
     const [formData, setFormData] = useState({
         name: '',
         description: '',
-        price: ''
+        price: '',
+        quantity: '',
+        category: ''
     });
     const [searchTerm, setSearchTerm] = useState('');
     const [editId, setEditId] = useState(null);
@@ -40,15 +42,15 @@ const Products = ({ onLogout }) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        // Validate dữ liệu phía frontend bằng validateProduct
+        const fieldErrors = validateProduct(formData);
+        if (Object.keys(fieldErrors).length > 0) {
+            setErrors(fieldErrors);
+            return;
+        }
+
         const productData = {
             ...formData,
-            price: parseFloat(formData.price)
-        };
-
-        const validation = validateProduct(productData);
-        if (!validation.isValid) {
-            setErrors(validation.errors);
-            return;
         }
 
         setLoading(true);
@@ -72,7 +74,7 @@ const Products = ({ onLogout }) => {
         setFormData({
             name: product.name,
             description: product.description || '',
-            price: product.price.toString()
+            price: product.price.toString(),
         });
     };
 
@@ -88,7 +90,11 @@ const Products = ({ onLogout }) => {
     };
 
     const resetForm = () => {
-        setFormData({ name: '', description: '', price: '' });
+        setFormData({
+            name: '',
+            description: '',
+            price: '',
+        });
         setEditId(null);
         setErrors({});
     };
@@ -210,6 +216,14 @@ const Products = ({ onLogout }) => {
                                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
                                 placeholder="Enter product description (optional)"
                             />
+                            {errors.description && (
+                                <p className="mt-2 text-sm text-red-600 flex items-center">
+                                    <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                                    </svg>
+                                    {errors.description}
+                                </p>
+                            )}
                         </div>
 
                         {/* Submit Error */}
@@ -284,11 +298,14 @@ const Products = ({ onLogout }) => {
                             Product List
                         </span>
                         <span className="text-sm font-normal text-gray-500 bg-gray-100 px-4 py-2 rounded-full">
-                            {products.length} {products.length === 1 ? 'Product' : 'Products'}
+                            {products && products.length > 0
+                                ? `${products.length} ${products.length === 1 ? 'Product' : 'Products'}`
+                                : "0 Products"
+                            }
                         </span>
                     </h2>
 
-                    {products.length === 0 ? (
+                    { products?.length===0 ? (
                         <div className="text-center py-16">
                             <svg className="w-24 h-24 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
@@ -297,8 +314,8 @@ const Products = ({ onLogout }) => {
                             <p className="text-gray-500">Add your first product to get started!</p>
                         </div>
                     ) : (
-                        <div data-testid="product-list" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {filteredProducts.map(product => (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {products && products.map(product => (
                                 <div
                                     key={product.id}
                                     className="bg-gradient-to-br from-white to-gray-50 border border-gray-200 rounded-xl p-6 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
