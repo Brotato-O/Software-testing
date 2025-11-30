@@ -24,6 +24,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import java.util.List;
@@ -41,9 +42,6 @@ class ProductControllerIntegrationTest {
         @MockBean
         private ProductService productService;
 
-        // ============================================
-        // 1️⃣ Test POST /api/auth/login thành công
-        // ============================================
         @Test
         @DisplayName("GET /api/products -  Lay danh sach san pham thanh cong")
         void testGetAllProducts() throws Exception {
@@ -53,6 +51,7 @@ class ProductControllerIntegrationTest {
 
                 when(productService.getAllProducts()).thenReturn(products);
                 mockMvc.perform(get("/api/products"))
+                                .andDo(print())
                                 .andExpect(status().isOk())
                                 .andExpect(jsonPath("$", hasSize(2)))
                                 .andExpect(jsonPath("$[0].name").value("Laptop"));
@@ -70,6 +69,7 @@ class ProductControllerIntegrationTest {
                 mockMvc.perform(post("/api/products")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(newProduct)))
+                                .andDo(print())
                                 .andExpect(status().isOk())
                                 .andExpect(jsonPath("$.id").value(3L))
                                 .andExpect(jsonPath("$.name").value("Keyboard"));
@@ -81,6 +81,7 @@ class ProductControllerIntegrationTest {
                 when(productService.getAllProducts()).thenReturn(List.of());
 
                 mockMvc.perform(get("/api/products"))
+                                .andDo(print())
                                 .andExpect(status().isOk())
                                 .andExpect(jsonPath("$", hasSize(0)));
         }
@@ -93,6 +94,7 @@ class ProductControllerIntegrationTest {
                 mockMvc.perform(post("/api/products")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(invalidProduct)))
+                                .andDo(print())
                                 .andExpect(status().isBadRequest());
         }
 
@@ -105,6 +107,7 @@ class ProductControllerIntegrationTest {
                                 .thenThrow(new RuntimeException("Product not found"));
 
                 mockMvc.perform(get("/api/products/{id}", nonExistentId))
+                                .andDo(print())
                                 .andExpect(status().isInternalServerError());
         }
 
@@ -117,6 +120,7 @@ class ProductControllerIntegrationTest {
                 when(productService.getProduct(productId)).thenReturn(product);
 
                 mockMvc.perform(get("/api/products/{id}", productId))
+                                .andDo(print())
                                 .andExpect(status().isOk())
                                 .andExpect(jsonPath("$.id").value(productId))
                                 .andExpect(jsonPath("$.name").value("Laptop"));
@@ -134,6 +138,7 @@ class ProductControllerIntegrationTest {
                 mockMvc.perform(put("/api/products/{id}", productId)
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(updatedProduct)))
+                                .andDo(print())
                                 .andExpect(status().isOk())
                                 .andExpect(jsonPath("$.id").value(productId))
                                 .andExpect(jsonPath("$.name").value("LaptopUpdated"));
@@ -148,6 +153,7 @@ class ProductControllerIntegrationTest {
                 doNothing().when(productService).deleteProduct(anyLong());
 
                 mockMvc.perform(delete("/api/products/{id}", productId))
+                                .andDo(print())
                                 .andExpect(status().isOk());
         }
 
@@ -163,6 +169,7 @@ class ProductControllerIntegrationTest {
                 mockMvc.perform(put("/api/products/{id}", nonExistentId)
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(updatedProduct)))
+                                .andDo(print())
                                 .andExpect(status().isInternalServerError());
         }
 }
