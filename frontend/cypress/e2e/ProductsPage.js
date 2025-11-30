@@ -1,3 +1,4 @@
+
 // Page Object for Products Page
 class ProductsPage {
   visit() {
@@ -14,6 +15,18 @@ class ProductsPage {
 
   addToCartByName(name) {
     this.getProductByName(name).find('button[data-testid="add-to-cart"]').click();
+  }
+
+  getCartButton() {
+    return cy.get('[data-testid="cart-button"]');
+  }
+
+  getProductPriceByName(name) {
+    return this.getProductByName(name).find('[data-testid="product-price"]');
+  }
+
+  getProductDescriptionByName(name) {
+    return this.getProductByName(name).find('[data-testid="product-description"]');
   }
 }
 

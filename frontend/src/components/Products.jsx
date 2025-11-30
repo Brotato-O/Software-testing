@@ -9,6 +9,7 @@ const Products = ({ onLogout }) => {
         description: '',
         price: ''
     });
+    const [searchTerm, setSearchTerm] = useState('');
     const [editId, setEditId] = useState(null);
     const [errors, setErrors] = useState({});
     const [loading, setLoading] = useState(false);
@@ -91,6 +92,8 @@ const Products = ({ onLogout }) => {
         setEditId(null);
         setErrors({});
     };
+
+    const filteredProducts = products.filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase()));
 
     return (
         <div className="min-h-screen py-8 px-4">
@@ -262,6 +265,16 @@ const Products = ({ onLogout }) => {
                 </div>
 
                 {/* Products List */}
+                <div className="mb-4 flex items-center space-x-4">
+                    <input
+                        data-testid="product-search"
+                        type="text"
+                        placeholder="Search products..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="px-4 py-2 border rounded-lg w-full md:w-1/3"
+                    />
+                </div>
                 <div className="bg-white rounded-2xl shadow-lg p-8">
                     <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center justify-between">
                         <span className="flex items-center">
@@ -284,15 +297,16 @@ const Products = ({ onLogout }) => {
                             <p className="text-gray-500">Add your first product to get started!</p>
                         </div>
                     ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {products.map(product => (
+                        <div data-testid="product-list" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {filteredProducts.map(product => (
                                 <div
                                     key={product.id}
                                     className="bg-gradient-to-br from-white to-gray-50 border border-gray-200 rounded-xl p-6 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
+                                    data-testid="product-item"
                                 >
                                     <div className="flex justify-between items-start mb-4">
                                         <div className="flex-1">
-                                            <h3 className="text-xl font-bold text-gray-800 mb-2">{product.name}</h3>
+                                            <h3 data-testid="product-name" className="text-xl font-bold text-gray-800 mb-2">{product.name}</h3>
                                             <p className="text-gray-600 text-sm line-clamp-2 mb-3">
                                                 {product.description || 'No description available'}
                                             </p>
@@ -301,7 +315,7 @@ const Products = ({ onLogout }) => {
 
                                     <div className="flex items-center justify-between pt-4 border-t border-gray-200">
                                         <div className="flex items-center">
-                                            <span className="text-3xl font-bold text-indigo-600">
+                                            <span data-testid="product-price" className="text-3xl font-bold text-indigo-600">
                                                 ${product.price.toFixed(2)}
                                             </span>
                                         </div>
@@ -310,6 +324,7 @@ const Products = ({ onLogout }) => {
                                             <button
                                                 onClick={() => handleEdit(product)}
                                                 className="p-2.5 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-all duration-200 hover:shadow-md group"
+                                                data-testid="edit-product-btn"
                                                 title="Edit"
                                             >
                                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -319,6 +334,7 @@ const Products = ({ onLogout }) => {
                                             <button
                                                 onClick={() => handleDelete(product.id)}
                                                 className="p-2.5 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-all duration-200 hover:shadow-md group"
+                                                data-testid="delete-product-btn"
                                                 title="Delete"
                                             >
                                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

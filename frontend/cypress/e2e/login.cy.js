@@ -1,38 +1,39 @@
 import LoginPage from './LoginPage';
-import ProductsPage from './ProductsPage';
+import { ProductsPage } from '../support/pages';
 
 describe('Login Flow', () => {
-    it('should enable submit button only when form is valid', () => {
-      // Ban đầu nút submit phải bị disable
-      cy.get('button[type="submit"]').should('be.disabled');
-      // Nhập email hợp lệ
-      loginPage.fillEmail('user@example.com');
-      cy.get('button[type="submit"]').should('be.disabled');
-      // Nhập password hợp lệ
-      loginPage.fillPassword('password123');
-      cy.get('button[type="submit"]').should('not.be.disabled');
-    });
-
-    it('should toggle password visibility', () => {
-      // Giả sử có nút hiển thị/ẩn password với data-testid="toggle-password"
-      loginPage.fillPassword('password123');
-      cy.get('input[name="password"]').should('have.attr', 'type', 'password');
-      cy.get('[data-testid="toggle-password"]').click();
-      cy.get('input[name="password"]').should('have.attr', 'type', 'text');
-      cy.get('[data-testid="toggle-password"]').click();
-      cy.get('input[name="password"]').should('have.attr', 'type', 'password');
-    });
-
-    it('should navigate to register page when clicking register link', () => {
-      // Giả sử có link đăng ký với data-testid="register-link"
-      cy.get('[data-testid="register-link"]').click();
-      cy.url().should('include', '/register');
-    });
   const loginPage = new LoginPage();
   const productsPage = new ProductsPage();
 
   beforeEach(() => {
     loginPage.visit();
+  });
+
+  it('should enable submit button only when form is valid', () => {
+    // Ban đầu nút submit phải bị disable
+    cy.get('button[type="submit"]').should('be.disabled');
+    // Nhập email hợp lệ
+    loginPage.fillEmail('user@example.com');
+    cy.get('button[type="submit"]').should('be.disabled');
+    // Nhập password hợp lệ
+    loginPage.fillPassword('password123');
+    cy.get('button[type="submit"]').should('not.be.disabled');
+  });
+
+  it('should toggle password visibility', () => {
+    // Giả sử có nút hiển thị/ẩn password với data-testid="toggle-password"
+    loginPage.fillPassword('password123');
+    cy.get('input[name="password"]').should('have.attr', 'type', 'password');
+    cy.get('[data-testid="toggle-password"]').click();
+    cy.get('input[name="password"]').should('have.attr', 'type', 'text');
+    cy.get('[data-testid="toggle-password"]').click();
+    cy.get('input[name="password"]').should('have.attr', 'type', 'password');
+  });
+
+  it('should navigate to register page when clicking register link', () => {
+    // Giả sử có link đăng ký với data-testid="register-link"
+    cy.get('[data-testid="register-link"]').click();
+    cy.url().should('include', '/register');
   });
 
   it('should login successfully with valid credentials (success flow)', () => {

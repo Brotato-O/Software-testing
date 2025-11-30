@@ -1,4 +1,4 @@
-import ProductsPage from './ProductsPage';
+// Page objects available under cypress/support/pages
 
 class LoginPage {
   visit() {
@@ -15,6 +15,15 @@ class LoginPage {
 
   submit() {
     cy.get('button[type="submit"]').click();
+  }
+
+  loginAs(email, password) {
+    this.visit();
+    this.fillEmail(email);
+    this.fillPassword(password);
+    this.submit();
+    // Ensure the login process completes
+    cy.url().should('not.include', '/login');
   }
 
   getErrorMessage() {
