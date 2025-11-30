@@ -115,7 +115,7 @@ class AuthControllerIntegrationTest {
                                                 .content(invalidJson))
                                 .andExpect(status().isBadRequest())
                                 .andDo(print())
-                                .andExpect(jsonPath("$.username").value("Username is required"));
+                                .andExpect(jsonPath("$.errors.username").value("Username must be 3-50 characters"));
         }
 
         // ============================================
@@ -138,7 +138,8 @@ class AuthControllerIntegrationTest {
                                                 .content(invalidJson))
                                 .andDo(print())
                                 .andExpect(status().isBadRequest())
-                                .andExpect(jsonPath("$.password")
+                                .andDo(print())
+                                .andExpect(jsonPath("$.errors.password")
                                                 .value("Password must contain both letters and numbers"));
         }
 
@@ -162,7 +163,7 @@ class AuthControllerIntegrationTest {
                                                 .content(invalidJson))
                                 .andDo(print())
                                 .andExpect(status().isBadRequest())
-                                .andExpect(jsonPath("$.username").value(
+                                .andExpect(jsonPath("$.errors.username").value(
                                                 "Username can only contain letters, numbers, dots, hyphens, and underscores"));
         }
 
