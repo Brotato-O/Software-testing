@@ -1,4 +1,4 @@
-package com.flogin.service;
+package com.flogin.controller;
 
 import com.flogin.controller.AuthController;
 import com.flogin.dto.LoginRequest;
@@ -18,6 +18,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 
 @WebMvcTest(AuthController.class)
 @DisplayName("Login API Integration Tests")
@@ -32,13 +33,10 @@ class AuthControllerIntegrationTest {
         @MockBean
         private AuthService authService;
 
-        // ============================================
-        // 1️⃣ Test POST /api/auth/login thành công
-        // ============================================
         @Test
         @DisplayName("POST /api/auth/login - Đăng nhập thành công")
         void testLoginSuccess() throws Exception {
-                LoginRequest request = new LoginRequest("testuser", "Test123"); // hợp lệ
+                LoginRequest request = new LoginRequest("testuser", "Test123");
                 LoginResponse mockResponse = new LoginResponse(true, "Dang nhap thanh cong", "TOKEN_12345678");
 
                 when(authService.authenticate(any(LoginRequest.class)))
@@ -49,18 +47,16 @@ class AuthControllerIntegrationTest {
                                                 .contentType(MediaType.APPLICATION_JSON)
                                                 .content(objectMapper.writeValueAsString(request)))
                                 .andExpect(status().isOk())
+                                .andDo(print())
                                 .andExpect(jsonPath("$.success").value(true))
                                 .andExpect(jsonPath("$.message").value("Dang nhap thanh cong"))
                                 .andExpect(jsonPath("$.token").exists());
         }
 
-        // ============================================
-        // 2️⃣ Test POST /api/auth/login sai password
-        // ============================================
         @Test
         @DisplayName("POST /api/auth/login - Sai password (401)")
         void testLoginWrongPassword() throws Exception {
-                // password hợp lệ với @Pattern nhưng không đúng
+
                 LoginRequest request = new LoginRequest("testuser", "Wrong123");
 
                 LoginResponse failResponse = new LoginResponse(false, "Password không đúng", null);
@@ -73,6 +69,28 @@ class AuthControllerIntegrationTest {
                                                 .contentType(MediaType.APPLICATION_JSON)
                                                 .content(objectMapper.writeValueAsString(request)))
                                 .andExpect(status().isUnauthorized())
+                                .andDo(print())
+                                .andExpect(jsonPath("$.success").value(false))
+                                .andExpect(jsonPath("$.token").doesNotExist());
+        }
+
+        @Test
+        @DisplayName("POST /api/auth/login - Sai username (401)")
+        void testLoginWrongUsername() throws Exception {
+
+                LoginRequest request = new LoginRequest("testuserWrong", "test123");
+
+                LoginResponse failResponse = new LoginResponse(false, "Username không tồn tại", null);
+
+                when(authService.authenticate(any(LoginRequest.class)))
+                                .thenReturn(failResponse);
+
+                mockMvc.perform(
+                                post("/api/auth/login")
+                                                .contentType(MediaType.APPLICATION_JSON)
+                                                .content(objectMapper.writeValueAsString(request)))
+                                .andExpect(status().isUnauthorized())
+                                .andDo(print())
                                 .andExpect(jsonPath("$.success").value(false))
                                 .andExpect(jsonPath("$.token").doesNotExist());
         }
@@ -81,75 +99,71 @@ class AuthControllerIntegrationTest {
         // Test 400 Bad Request - message contains "required"
         // ============================================
         @Test
-        @DisplayName("POST /api/auth/login - Validation error (required)")
+        @DisplayName("POST /api/auth/login - Validation error: username required")
         void testLoginValidationRequired() throws Exception {
-                LoginRequest request = new LoginRequest("user123", "Pass123"); // hợp lệ
 
-                LoginResponse validationResponse = new LoginResponse(false,
-                                "Username is required", null); // chứa "required"
-
-                when(authService.authenticate(any(LoginRequest.class)))
-                                .thenReturn(validationResponse);
+                String invalidJson = """
+                                {
+                                    "username": "",
+                                    "password": "Pass123"
+                                }
+                                """;
 
                 mockMvc.perform(
                                 post("/api/auth/login")
                                                 .contentType(MediaType.APPLICATION_JSON)
-                                                .content(objectMapper.writeValueAsString(request)))
+                                                .content(invalidJson))
                                 .andExpect(status().isBadRequest())
-                                .andExpect(jsonPath("$.success").value(false))
-                                .andExpect(jsonPath("$.message").value("Username is required"))
-                                .andExpect(jsonPath("$.token").doesNotExist());
+                                .andDo(print())
+                                .andExpect(jsonPath("$.username").value("Username is required"));
         }
 
         // ============================================
         // Test 400 Bad Request - message contains "must"
         // ============================================
         @Test
-        @DisplayName("POST /api/auth/login - Validation error (must)")
+        @DisplayName("POST /api/auth/login - Validation error: password must")
         void testLoginValidationMust() throws Exception {
-                LoginRequest request = new LoginRequest("user123", "Pass123"); // hợp lệ
 
-                LoginResponse validationResponse = new LoginResponse(false,
-                                "Password must contain both letters and numbers", null); // chứa "must"
-
-                when(authService.authenticate(any(LoginRequest.class)))
-                                .thenReturn(validationResponse);
+                String invalidJson = """
+                                {
+                                    "username": "user123",
+                                    "password": "abcdef"
+                                }
+                                """;
 
                 mockMvc.perform(
                                 post("/api/auth/login")
                                                 .contentType(MediaType.APPLICATION_JSON)
-                                                .content(objectMapper.writeValueAsString(request)))
+                                                .content(invalidJson))
+                                .andDo(print())
                                 .andExpect(status().isBadRequest())
-                                .andExpect(jsonPath("$.success").value(false))
-                                .andExpect(jsonPath("$.message")
-                                                .value("Password must contain both letters and numbers"))
-                                .andExpect(jsonPath("$.token").doesNotExist());
+                                .andExpect(jsonPath("$.password")
+                                                .value("Password must contain both letters and numbers"));
         }
 
         // ============================================
         // Test 400 Bad Request - message contains "only"
         // ============================================
         @Test
-        @DisplayName("POST /api/auth/login - Validation error (only)")
+        @DisplayName("POST /api/auth/login - Validation error: username only")
         void testLoginValidationOnly() throws Exception {
-                LoginRequest request = new LoginRequest("user123", "Pass123"); // hợp lệ
 
-                LoginResponse validationResponse = new LoginResponse(false,
-                                "Username can only contain letters, numbers, dots, hyphens, and underscores", null); // chứa
-                                                                                                                     // "only"
-
-                when(authService.authenticate(any(LoginRequest.class)))
-                                .thenReturn(validationResponse);
+                String invalidJson = """
+                                {
+                                    "username": "user@123",
+                                    "password": "Pass123"
+                                }
+                                """;
 
                 mockMvc.perform(
                                 post("/api/auth/login")
                                                 .contentType(MediaType.APPLICATION_JSON)
-                                                .content(objectMapper.writeValueAsString(request)))
+                                                .content(invalidJson))
+                                .andDo(print())
                                 .andExpect(status().isBadRequest())
-                                .andExpect(jsonPath("$.success").value(false))
-                                .andExpect(jsonPath("$.message").value(
-                                                "Username can only contain letters, numbers, dots, hyphens, and underscores"))
-                                .andExpect(jsonPath("$.token").doesNotExist());
+                                .andExpect(jsonPath("$.username").value(
+                                                "Username can only contain letters, numbers, dots, hyphens, and underscores"));
         }
 
         // ============================================
@@ -168,6 +182,7 @@ class AuthControllerIntegrationTest {
                                                 .header("Origin", "http://localhost:3000")
                                                 .contentType(MediaType.APPLICATION_JSON)
                                                 .content(objectMapper.writeValueAsString(request)))
+                                .andDo(print())
                                 .andExpect(header().exists("Access-Control-Allow-Origin"))
                                 .andExpect(header().string("Access-Control-Allow-Origin", "http://localhost:3000"));
         }

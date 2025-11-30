@@ -3,7 +3,7 @@
 // ========================================
 // Áp dụng TDD (Test-Driven Development) approach
 
-import { validateUsername } from '../utils/validation';
+import { validateUsername } from '../utils/validateUsername';
 
 describe('validateUsername() - Unit Tests (2 điểm)', () => {
 

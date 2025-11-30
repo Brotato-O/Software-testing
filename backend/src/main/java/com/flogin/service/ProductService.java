@@ -3,6 +3,8 @@ package com.flogin.service;
 import com.flogin.dto.ProductDto;
 import com.flogin.entity.Product;
 import com.flogin.repository.ProductRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -19,6 +21,11 @@ public class ProductService {
         return productRepository.findAll().stream()
                 .map(this::convertToDto)
                 .collect(Collectors.toList());
+    }
+
+    public Page<ProductDto> getAllProducts(Pageable pageable) {
+        return productRepository.findAll(pageable)
+                .map(this::convertToDto);
     }
 
     public ProductDto getProduct(Long id) {
@@ -55,6 +62,7 @@ public class ProductService {
         dto.setName(product.getName());
         dto.setDescription(product.getDescription());
         dto.setPrice(product.getPrice());
+        dto.setCategory(product.getCategory());
         return dto;
     }
 
@@ -63,6 +71,7 @@ public class ProductService {
         product.setName(dto.getName());
         product.setDescription(dto.getDescription());
         product.setPrice(dto.getPrice());
+        product.setCategory(dto.getCategory());
         return product;
     }
 }
