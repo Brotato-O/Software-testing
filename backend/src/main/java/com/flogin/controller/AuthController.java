@@ -19,26 +19,23 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<LoginResponse> login(
-            @Valid @RequestBody LoginRequest loginRequest) {
+    public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest loginRequest) {
 
         LoginResponse res = authService.authenticate(loginRequest);
 
-        // ❗ Lỗi validation → BAD REQUEST (400)
-        if (!res.isSuccess() &&
-                (res.getMessage().contains("required")
-                        || res.getMessage().contains("must")
-                        || res.getMessage().contains("only"))) {
-            return ResponseEntity.badRequest().body(res);
-        }
-
-        // ❗ Sai username hoặc password → 401
+        // 🔥 Validation errors — return 400 nếu message chứa required/must/only
         if (!res.isSuccess()) {
-            return ResponseEntity.status(401).body(res);
+            String msg = res.getMessage().toLowerCase();
+
+            if (msg.contains("required") || msg.contains("must") || msg.contains("only")) {
+                return ResponseEntity.badRequest().body(res);       // 400
+            }
+            return ResponseEntity.status(401).body(res);            // 401
         }
 
-        // ✔ Đăng nhập thành công → 200
+        // ✔ Success → 200
         return ResponseEntity.ok(res);
     }
+
 
 }
