@@ -33,3 +33,23 @@ coverage/
 *.tmp
 *.temp
 .cache/
+# Node
+node_modules/
+npm-debug.log*
+package-lock.json
+
+# Cypress
+cypress/videos/
+cypress/screenshots/
+cypress/downloads/
+cypress/results/
+.cypress-cache/
+
+# Build
+dist/
+build/
+
+# System
+.DS_Store
+Thumbs.db
+*.min.js

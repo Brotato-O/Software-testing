@@ -19,21 +19,23 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<Map<String, String>> login(@Valid @RequestBody LoginRequest loginRequest) {
-        // Gọi authenticate với LoginRequest object
-        LoginResponse response = authService.authenticate(loginRequest);
-        
-        if (response.isSuccess()) {
-            // Trả về thành công kèm token
-            return ResponseEntity.ok(Map.of(
-                "message", response.getMessage(),
-                "token", response.getToken()
-            ));
-        } else {
-            // Trả về lỗi 401 với message
-            return ResponseEntity.status(401).body(Map.of(
-                "message", response.getMessage()
-            ));
+    public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest loginRequest) {
+
+        LoginResponse res = authService.authenticate(loginRequest);
+
+        // 🔥 Validation errors — return 400 nếu message chứa required/must/only
+        if (!res.isSuccess()) {
+            String msg = res.getMessage().toLowerCase();
+
+            if (msg.contains("required") || msg.contains("must") || msg.contains("only")) {
+                return ResponseEntity.badRequest().body(res);       // 400
+            }
+            return ResponseEntity.status(401).body(res);            // 401
         }
+
+        // ✔ Success → 200
+        return ResponseEntity.ok(res);
     }
+
+
 }

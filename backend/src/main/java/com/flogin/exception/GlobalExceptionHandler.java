@@ -11,20 +11,26 @@ import java.util.HashMap;
 import java.util.Map;
 
 @RestControllerAdvice
+
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, String>> handleValidationExceptions(
+    public ResponseEntity<Map<String, Object>> handleValidationExceptions(
             MethodArgumentNotValidException ex) {
-        Map<String, String> errors = new HashMap<>();
+
+        Map<String, String> fieldErrors = new HashMap<>();
 
         ex.getBindingResult().getAllErrors().forEach((error) -> {
             String fieldName = ((FieldError) error).getField();
             String errorMessage = error.getDefaultMessage();
-            errors.put(fieldName, errorMessage);
+            fieldErrors.put(fieldName, errorMessage);
         });
 
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
+        Map<String, Object> response = new HashMap<>();
+        response.put("status", HttpStatus.BAD_REQUEST.value()); // hoặc BAD_REQUEST.name()
+        response.put("errors", fieldErrors);
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
 
     @ExceptionHandler(Exception.class)

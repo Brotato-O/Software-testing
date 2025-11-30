@@ -1,0 +1,26 @@
+[
+  {
+    "id": 101,
+    "name": "Widget A",
+    "price": 12.5,
+    "quantity": 10,
+    "category": "Gadgets",
+    "description": "A useful widget"
+  },
+  {
+    "id": 102,
+    "name": "Gizmo B",
+    "price": 25.0,
+    "quantity": 5,
+    "category": "Gadgets",
+    "description": "A fancy gizmo"
+  },
+  {
+    "id": 103,
+    "name": "Accessory C",
+    "price": 5.0,
+    "quantity": 20,
+    "category": "Accessories",
+    "description": "A handy accessory"
+  }
+]
