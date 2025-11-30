@@ -9,6 +9,17 @@ jest.mock('../services/api');
 jest.mock('axios');
 
 describe('Login Component', () => {
+    //test render form đăng nhập
+    test('Render login form', () => {
+        const mockSuccess = jest.fn();
+        render(<Login onLoginSuccess={mockSuccess} />);
+        const usernameInput = screen.getByLabelText('Username');
+        const passwordInput = screen.getByLabelText('Password');
+        const submitButton = screen.getByRole('button');
+        expect(usernameInput).toBeInTheDocument();
+        expect(passwordInput).toBeInTheDocument();
+        expect(submitButton).toBeInTheDocument();
+    });
 
     //kiểm tra không nhập
     test ('Emty input fileds', async ()=>{
@@ -105,7 +116,10 @@ describe('Login Component', () => {
         fireEvent.change(passwordInput, {target: {value: 'WrongPass123'}});
         fireEvent.click(submitButton);
 
+        //kiểm tra handleLoginFailure được gọi và hiển thị lỗi
         const serverError = await screen.findByText('An error occurred');
+        
+        //kiểm tra api login được gọi với đúng tham số
         await waitFor(() => {
             expect(mockLogin).toHaveBeenCalledWith('wronguser', 'WrongPass123');
             expect(serverError).toBeInTheDocument()

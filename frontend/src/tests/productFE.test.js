@@ -1,6 +1,5 @@
-import React from "react";
 import '@testing-library/jest-dom';
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import Products from "../components/Products";
 import * as apiModule from "../services/api"; // mock API
 jest.mock('../services/api', () => ({
@@ -36,6 +35,38 @@ describe("ProductList Component Integration", () => {
         const productCards = screen.getAllByText(/\$/); // tìm theo ký hiệu giá
         expect(productCards.length).toBe(4); //2 sản phẩm, còn 2 kí tự trong add
     });
+
+    test ("handle empty product list", async ()=>{
+        // Mock getProducts() trả về mảng rỗng
+        jest.spyOn(apiModule, "getProducts").mockResolvedValue([]);
+        const mockOnLogout = jest.fn();
+        render(<Products onLogout={mockOnLogout} />);
+        const noProductsText = await screen.findByText('No products yet');
+        expect(noProductsText).toBeInTheDocument();
+    });
+
+    test("handle API error on loading products", async () => {
+    // Mock console.error
+    const consoleSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+
+    // Mock API lỗi
+    jest.spyOn(apiModule, "getProducts").mockRejectedValue(new Error("Failed to fetch products"));
+
+    const mockOnLogout = jest.fn();
+    render(<Products onLogout={mockOnLogout} />);
+
+    // Chờ loadProducts chạy xong
+    await waitFor(() => {
+        expect(consoleSpy).toHaveBeenCalledWith(
+            "Failed to load products:",
+            expect.any(Error)
+        );
+    });
+
+    // Khôi phục console
+    consoleSpy.mockRestore();
+});
+
 
     // Test tạo sản phẩm mới với unvalid data
     test("create new products with empty name", async () => {
@@ -94,6 +125,7 @@ describe("ProductList Component Integration", () => {
         expect(priceError).toBeInTheDocument();
     });
 
+    //test tạo sản phẩm mới với valid data
     test("Create new products with valid data", async () => {
         // Mock API trước khi thực hiện submit
         apiModule.createProduct.mockResolvedValue({
@@ -228,7 +260,7 @@ describe("ProductList Component Integration", () => {
         expect(detailText).toBeInTheDocument();
     });
 
-    test("view product details", async () => {
+    test("view empty product details", async () => {
         const mockProducts = [
             { id: 1, name: "Laptop", description: "", price: 1000 },
         ];
