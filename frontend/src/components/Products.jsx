@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getProducts, createProduct, updateProduct, deleteProduct } from '../services/api';
+import { getProducts, createProduct, updateProduct, deleteProduct } from '../services/ProductService';
 import { validateProduct } from '../utils/validateProduct';
 
 const Products = ({ onLogout }) => {

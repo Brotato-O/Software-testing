@@ -1,8 +1,8 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import Login from "../components/Login";
-import * as apiService from "../services/api";
+import * as apiService from "../services/AuthService";
 
-jest.mock("../services/api");
+jest.mock("../services/AuthService");
 
 describe("Login Mock Tests", () => {
     beforeEach(() => jest.clearAllMocks());

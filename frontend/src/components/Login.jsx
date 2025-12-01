@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { login } from '../services/api';
+import { login } from '../services/AuthService';
 import { validateUsername } from '../utils/validateUsername';
 import { validatePassword } from '../utils/validatePassword';
 

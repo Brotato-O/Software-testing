@@ -2,9 +2,9 @@ import {render, screen, fireEvent, waitFor} from '@testing-library/react';
 import '@testing-library/jest-dom';
 import axios from 'axios';
 import Login from '../components/Login';
-import * as apiModule from '../services/api';
+import * as apiModule from '../services/AuthService';
 
-jest.mock('../services/api');
+jest.mock('../services/AuthService');
 
 jest.mock('axios');
 

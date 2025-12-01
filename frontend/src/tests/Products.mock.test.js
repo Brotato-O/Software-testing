@@ -7,11 +7,11 @@
  * - Test filteredProducts search
  */
 
-import * as productService from "../services/api";
+import * as productService from "../services/ProductService";
 import { validateProduct } from "../utils/validateProduct";
 
 // Mock toàn bộ ProductService
-jest.mock("../services/api");
+jest.mock("../services/ProductService");
 jest.mock("../utils/validateProduct");
 
 describe("Product Mock Tests", () => {
