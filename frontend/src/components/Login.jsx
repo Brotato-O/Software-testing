@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { login } from '../services/api';
+import { loginUser } from '../services/AuthService';
 import { validateUsername } from '../utils/validateUsername';
 import { validatePassword } from '../utils/validatePassword';
 
@@ -49,7 +49,7 @@ const Login = ({ onLoginSuccess }) => {
 
         setLoading(true);
         try {
-            await login(username, password);
+            await loginUser(username, password);
             onLoginSuccess();
         } catch (error) {
             setErrors({

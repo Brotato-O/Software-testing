@@ -1,8 +1,8 @@
 import '@testing-library/jest-dom';
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import Products from "../components/Products";
-import * as apiModule from "../services/api"; // mock API
-jest.mock('../services/api', () => ({
+import * as apiModule from "../services/ProductService"; // mock API
+jest.mock('../services/ProductService', () => ({
     getProducts: jest.fn(),
     createProduct: jest.fn(),
     updateProduct: jest.fn(),

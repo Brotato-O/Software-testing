@@ -1,14 +1,14 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import Login from "../components/Login";
-import * as apiService from "../services/api";
+import * as authService from "../services/AuthService";
 
-jest.mock("../services/api");
+jest.mock("../services/AuthService");
 
 describe("Login Mock Tests", () => {
     beforeEach(() => jest.clearAllMocks());
 
     test("Mock: Login thành công", async () => {
-        apiService.login.mockResolvedValue({
+        authService.loginUser.mockResolvedValue({
             success: true,
             token: "mock-token-123"
         });
@@ -28,14 +28,14 @@ describe("Login Mock Tests", () => {
         fireEvent.click(screen.getByText("Sign In"));
 
         await waitFor(() => {
-            expect(apiService.login).toHaveBeenCalledTimes(1);
-            expect(apiService.login).toHaveBeenCalledWith("testuser", "Abc123");
+            expect(authService.loginUser).toHaveBeenCalledTimes(1);
+            expect(authService.loginUser).toHaveBeenCalledWith("testuser", "Abc123");
             expect(onLoginSuccess).toHaveBeenCalled();
         });
     });
 
     test("Mock: Login thất bại", async () => {
-        apiService.login.mockRejectedValue({
+        authService.loginUser.mockRejectedValue({
             message: "Invalid credentials"
         });
 
@@ -52,7 +52,7 @@ describe("Login Mock Tests", () => {
         fireEvent.click(screen.getByText("Sign In"));
 
         await waitFor(() => {
-            expect(apiService.login).toHaveBeenCalledTimes(1);
+            expect(authService.loginUser).toHaveBeenCalledTimes(1);
             expect(screen.getByText("Invalid credentials")).toBeInTheDocument();
         });
     });

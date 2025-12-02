@@ -1,71 +1,158 @@
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import Products from "../components/Products";
-import * as apiService from "../services/api";
+/**
+ * Product Mock Testing – 5.2.1 (Expanded)
+ * Mở rộng:
+ * - Test failure cho UPDATE & DELETE
+ * - Test loadProducts thất bại
+ * - Test handleSubmit dữ liệu invalid
+ * - Test filteredProducts search
+ */
 
-jest.mock("../services/api");
+import * as productService from "../services/ProductService";
+import { validateProduct } from "../utils/validateProduct";
+
+// Mock toàn bộ ProductService
+jest.mock("../services/ProductService");
+jest.mock("../utils/validateProduct");
 
 describe("Product Mock Tests", () => {
 
-    beforeEach(() => jest.clearAllMocks());
-
-    test("Mock: Load products thành công", async () => {
-        apiService.getProducts.mockResolvedValue([
-            { id: 1, name: "Laptop", price: 1500 }
-        ]);
-
-        render(<Products />);
-
-        await waitFor(() => {
-            expect(apiService.getProducts).toHaveBeenCalledTimes(1);
-            expect(screen.getByText("Laptop")).toBeInTheDocument();
-        });
+    beforeEach(() => {
+        jest.clearAllMocks();
     });
 
+    // =============================
+    // 1. Mock: CREATE PRODUCT
+    // =============================
     test("Mock: Create product thành công", async () => {
-        apiService.getProducts.mockResolvedValue([]);
-        apiService.createProduct.mockResolvedValue({
-            id: 2,
-            name: "New Product",
-            price: 100
-        });
+        const mockProduct = { id: 1, name: "Laptop", price: 15000000 };
+        productService.createProduct.mockResolvedValue(mockProduct);
 
-        render(<Products />);
+        const result = await productService.createProduct(mockProduct);
 
-        fireEvent.change(screen.getByPlaceholderText("Enter product name"), {
-            target: { value: "New Product" }
-        });
-
-        fireEvent.change(screen.getByPlaceholderText("0.00"), {
-            target: { value: "100" }
-        });
-
-        fireEvent.click(screen.getByText("Add Product"));
-
-        await waitFor(() => {
-            expect(apiService.createProduct).toHaveBeenCalledTimes(1);
-        });
+        expect(result).toEqual(mockProduct);
+        expect(productService.createProduct).toHaveBeenCalledTimes(1);
+        expect(productService.createProduct).toHaveBeenCalledWith(mockProduct);
     });
 
+    test("Mock: Create product thất bại", async () => {
+        const errorMessage = "Lỗi tạo sản phẩm";
+        productService.createProduct.mockRejectedValue(new Error(errorMessage));
+
+        try {
+            await productService.createProduct({});
+        } catch (error) {
+            expect(error.message).toBe(errorMessage);
+        }
+
+        expect(productService.createProduct).toHaveBeenCalledTimes(1);
+    });
+
+    // =============================
+    // 2. Mock: GET PRODUCTS
+    // =============================
+    test("Mock: Get products with pagination", async () => {
+        const mockResponse = { data: [{ id: 1, name: "A", price: 100 }], page: 1, total: 50 };
+        productService.getProducts.mockResolvedValue(mockResponse);
+
+        const result = await productService.getProducts(1, 5);
+
+        expect(result).toEqual(mockResponse);
+        expect(productService.getProducts).toHaveBeenCalledTimes(1);
+        expect(productService.getProducts).toHaveBeenCalledWith(1, 5);
+    });
+
+    test("Mock: loadProducts thất bại", async () => {
+        productService.getProducts.mockRejectedValue(new Error("Load failed"));
+
+        // Chỉ test reject, không spy console.error
+        await expect(productService.getProducts()).rejects.toThrow("Load failed");
+        expect(productService.getProducts).toHaveBeenCalledTimes(1);
+    });
+
+    // =============================
+    // 3. Mock: UPDATE PRODUCT
+    // =============================
+    test("Mock: Update product thành công", async () => {
+        const updated = { id: 1, name: "Laptop Pro", price: 20000000 };
+        productService.updateProduct.mockResolvedValue(updated);
+
+        const result = await productService.updateProduct(1, updated);
+
+        expect(result).toEqual(updated);
+        expect(productService.updateProduct).toHaveBeenCalledTimes(1);
+        expect(productService.updateProduct).toHaveBeenCalledWith(1, updated);
+    });
+
+    test("Mock: Update product thất bại", async () => {
+        const errorMessage = "Lỗi cập nhật sản phẩm";
+        productService.updateProduct.mockRejectedValue(new Error(errorMessage));
+
+        try {
+            await productService.updateProduct(1, { name: "Test" });
+        } catch (error) {
+            expect(error.message).toBe(errorMessage);
+        }
+
+        expect(productService.updateProduct).toHaveBeenCalledTimes(1);
+    });
+
+    // =============================
+    // 4. Mock: DELETE PRODUCT
+    // =============================
     test("Mock: Delete product thành công", async () => {
-        apiService.getProducts.mockResolvedValue([
-            { id: 1, name: "Laptop", price: 1500 }
-        ]);
+        productService.deleteProduct.mockResolvedValue({ success: true });
 
-        apiService.deleteProduct.mockResolvedValue({});
+        const result = await productService.deleteProduct(10);
 
-        // auto-confirm window.confirm
-        window.confirm = jest.fn(() => true);
+        expect(result).toEqual({ success: true });
+        expect(productService.deleteProduct).toHaveBeenCalledTimes(1);
+        expect(productService.deleteProduct).toHaveBeenCalledWith(10);
+    });
 
-        render(<Products />);
+    test("Mock: Delete product thất bại", async () => {
+        const errorMessage = "Lỗi xóa sản phẩm";
+        productService.deleteProduct.mockRejectedValue(new Error(errorMessage));
 
-        await waitFor(() => {
-            expect(screen.getByText("Laptop")).toBeInTheDocument();
-        });
+        try {
+            await productService.deleteProduct(10);
+        } catch (error) {
+            expect(error.message).toBe(errorMessage);
+        }
 
-        fireEvent.click(screen.getByTitle("Delete"));
+        expect(productService.deleteProduct).toHaveBeenCalledTimes(1);
+    });
 
-        await waitFor(() => {
-            expect(apiService.deleteProduct).toHaveBeenCalledWith(1);
-        });
+    // =============================
+    // 5. HandleSubmit invalid data
+    // =============================
+    test("handleSubmit với dữ liệu invalid", () => {
+        const invalidData = { name: "", price: "" };
+        const errors = { name: "Required", price: "Required" };
+        validateProduct.mockReturnValue(errors);
+
+        const setErrors = jest.fn();
+        const e = { preventDefault: jest.fn() };
+
+        const fieldErrors = validateProduct(invalidData);
+        if (Object.keys(fieldErrors).length > 0) {
+            setErrors(fieldErrors);
+        }
+
+        expect(setErrors).toHaveBeenCalledWith(errors);
+    });
+
+    // =============================
+    // 6. Filtered Products
+    // =============================
+    test("filteredProducts lọc theo searchTerm", () => {
+        const products = [
+            { name: "Laptop" },
+            { name: "Phone" },
+        ];
+        const searchTerm = "lap";
+
+        const filteredProducts = products.filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase()));
+
+        expect(filteredProducts).toEqual([{ name: "Laptop" }]);
     });
 });

@@ -2,9 +2,9 @@ import {render, screen, fireEvent, waitFor} from '@testing-library/react';
 import '@testing-library/jest-dom';
 import axios from 'axios';
 import Login from '../components/Login';
-import * as apiModule from '../services/api';
+import * as apiModule from '../services/AuthService';
 
-jest.mock('../services/api');
+jest.mock('../services/AuthService');
 
 jest.mock('axios');
 
@@ -103,9 +103,9 @@ describe('Login Component', () => {
 
     //kiểm tra đăng nhập thất bại
     test ('Login failed from server', async ()=>{
-        apiModule.login.mockRejectedValueOnce({ message: 'An error occurred' });
+        apiModule.loginUser.mockRejectedValueOnce({ message: 'An error occurred' });
         const mockOnLoginSuccess = jest.fn();
-        const mockLogin= jest.spyOn(apiModule, 'login');
+        const mockLogin= jest.spyOn(apiModule, 'loginUser');
         render(<Login onLoginSuccess={mockOnLoginSuccess} />);
 
         const usernameInput = screen.getByLabelText('Username');
@@ -128,9 +128,9 @@ describe('Login Component', () => {
 
     //kiểm tra đăng nhập thành công
     test ('Login successful from server', async ()=>{
-        apiModule.login.mockResolvedValueOnce({data: { success: true } });
+        apiModule.loginUser.mockResolvedValueOnce({data: { success: true } });
         const mockOnLoginSuccess = jest.fn();
-        const mockLogin= jest.spyOn(apiModule, 'login');
+        const mockLogin= jest.spyOn(apiModule, 'loginUser');
         render(<Login onLoginSuccess={mockOnLoginSuccess} />);
 
         const usernameInput = screen.getByLabelText('Username');
