@@ -1,26 +1,20 @@
 [
   {
-    "id": 101,
+    "id": 1,
     "name": "Widget A",
     "price": 12.5,
-    "quantity": 10,
-    "category": "Gadgets",
-    "description": "A useful widget"
+    "description": "Basic widget"
   },
   {
-    "id": 102,
+    "id": 2,
     "name": "Gizmo B",
-    "price": 25.0,
-    "quantity": 5,
-    "category": "Gadgets",
-    "description": "A fancy gizmo"
+    "price": 25,
+    "description": "Advanced gizmo"
   },
   {
-    "id": 103,
+    "id": 3,
     "name": "Accessory C",
-    "price": 5.0,
-    "quantity": 20,
-    "category": "Accessories",
-    "description": "A handy accessory"
+    "price": 7.99,
+    "description": "Useful accessory"
   }
 ]
