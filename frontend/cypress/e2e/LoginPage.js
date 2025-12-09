@@ -1,33 +1,30 @@
-// Page objects available under cypress/support/pages
-
 class LoginPage {
   visit() {
     cy.visit('/login');
   }
 
-  fillEmail(email) {
-    cy.get('input[name="email"]').type(email);
+  fillUsername(username) {
+    cy.get('input[name="username"]').clear().type(username);
   }
 
   fillPassword(password) {
-    cy.get('input[name="password"]').type(password);
+    cy.get('input[name="password"]').clear().type(password);
   }
 
   submit() {
     cy.get('button[type="submit"]').click();
   }
 
-  loginAs(email, password) {
-    this.visit();
-    this.fillEmail(email);
-    this.fillPassword(password);
-    this.submit();
-    // Ensure the login process completes
-    cy.url().should('not.include', '/login');
+  getUsernameError() {
+    return cy.contains(/username/i).parent().find('p.text-red-600');
   }
 
-  getErrorMessage() {
-    return cy.get('[data-testid="login-error"]');
+  getPasswordError() {
+    return cy.contains(/password/i).parent().find('p.text-red-600');
+  }
+
+  getSubmitError() {
+    return cy.get('.bg-red-50');
   }
 }
 
