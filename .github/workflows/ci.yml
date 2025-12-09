@@ -1,38 +1,124 @@
-name: Frontend Login Tests
+name: Complete CI / CD Pipeline
 
 on:
   push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+    branches: [ main ]
 
 jobs:
-  cypress-login-tests:
+  test:
     runs-on: ubuntu-latest
 
+    services:
+      mysql:
+        image: mysql:8
+        env:
+          MYSQL_DATABASE: test
+          MYSQL_USER: hbstudent
+          MYSQL_PASSWORD: hbstudent
+          MYSQL_ROOT_PASSWORD: root
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping --silent" --health-interval=10s --health-timeout=5s --health-retries=5
+
     steps:
-      - name: Checkout source
+      - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
-          cache: 'npm'
+          node-version: '18'
 
-      - name: Install dependencies
-        run: npm ci
+      - name: Wait for MySQL
+        run: |
+          echo "Waiting for MySQL to be ready..."
+          npx wait-on tcp:3306
 
-      - name: Build app
+      - name: Backend - run tests with JaCoCo
+        working-directory: Software-testing/backend
+        env:
+          SPRING_DATASOURCE_URL: jdbc:mysql://127.0.0.1:3306/test
+          SPRING_DATASOURCE_USERNAME: hbstudent
+          SPRING_DATASOURCE_PASSWORD: hbstudent
+        run: |
+          mvn -B -DskipTests=false org.jacoco:jacoco-maven-plugin:prepare-agent test org.jacoco:jacoco-maven-plugin:report
+
+      - name: Upload backend junit tests
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: backend-test-results
+          path: Software-testing/backend/target/surefire-reports
+
+      - name: Install frontend dependencies
+        working-directory: Software-testing/frontend
+        run: |
+          npm ci
+
+      - name: Frontend - run unit tests (Jest)
+        working-directory: Software-testing/frontend
+        run: |
+          CI=true npm run test -- --coverage --watchAll=false
+
+      - name: Archive frontend coverage
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: frontend-coverage
+          path: Software-testing/frontend/coverage/lcov.info
+
+      - name: Build frontend
+        working-directory: Software-testing/frontend
         run: npm run build
 
-      - name: Start app
-        run: npm run preview &
-        # hoặc npm start / npm run dev &
+      - name: Serve built app for E2E
+        working-directory: Software-testing/frontend
+        run: |
+          npx serve -s build -l 3000 &
 
-      - name: Wait for app
+      - name: Wait for frontend
         run: npx wait-on http://localhost:3000
-        # đổi port cho đúng project của bạn
 
-      - name: Run Cypress Login Tests
-        run: npx cypress run --browser chrome
+      - name: Run E2E tests (Cypress)
+        working-directory: Software-testing/frontend
+        run: |
+          npx cypress run --config-file cypress.config.js --reporter mocha-junit-reporter --reporter-options mochaFile=cypress/results/junit/results-[hash].xml
+
+      - name: Upload Cypress results
+        uses: actions/upload-artifact@v3
+        with:
+          name: cypress-results
+          path: Software-testing/frontend/cypress/results
+
+      - name: Upload Cypress screenshots
+        uses: actions/upload-artifact@v3
+        with:
+          name: cypress-screenshots
+          path: Software-testing/frontend/cypress/screenshots
+
+      - name: Upload Cypress videos
+        uses: actions/upload-artifact@v3
+        with:
+          name: cypress-videos
+          path: Software-testing/frontend/cypress/videos
+
+      - name: Upload Coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          files: |
+            Software-testing/frontend/coverage/lcov.info
+            Software-testing/backend/target/site/jacoco/jacoco.xml
+          fail_ci_if_error: true
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
+      - name: Optionally Deploy (preview)
+        if: github.ref == 'refs/heads/main'
+        run: echo "Add deployment steps here (e.g., az webapp deploy, kubectl apply, etc.)"
