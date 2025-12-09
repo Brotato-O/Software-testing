@@ -15,14 +15,13 @@ describe("Login Mock Tests", () => {
 
         const onLoginSuccess = jest.fn();
 
-        render(<Login onLoginSuccess={onLoginSuccess} />);
-
+        render(<Login onLoginSuccess={onLoginSuccess}/>)
         fireEvent.change(screen.getByPlaceholderText("Enter your username"), {
             target: { value: "testuser" }
-        });
+        });        
 
         fireEvent.change(screen.getByPlaceholderText("Enter your password"), {
-            target: { value: "Abc123" } // ✔ valid password
+            target: { value: "Abc123" }
         });
 
         fireEvent.click(screen.getByText("Sign In"));

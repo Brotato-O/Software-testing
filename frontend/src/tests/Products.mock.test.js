@@ -33,7 +33,6 @@ describe("Product Mock Tests", () => {
         expect(productService.createProduct).toHaveBeenCalledTimes(1);
         expect(productService.createProduct).toHaveBeenCalledWith(mockProduct);
     });
-
     test("Mock: Create product thất bại", async () => {
         const errorMessage = "Lỗi tạo sản phẩm";
         productService.createProduct.mockRejectedValue(new Error(errorMessage));
