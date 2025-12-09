@@ -1,35 +1,71 @@
-class ProductsPage {
+export class ProductsPage {
   visit() {
     cy.visit('/products');
   }
 
-  getProductList() {
-    return cy.get('[data-testid="product-list"]');
+  // ===== FORM =====
+  getNameInput() {
+    return cy.get('input[name="name"]');
   }
 
-  getProductItems() {
+  getPriceInput() {
+    return cy.get('input[name="price"]');
+  }
+
+  getDescriptionInput() {
+    return cy.get('textarea[name="description"]');
+  }
+
+  getSubmitButton() {
+    return cy.get('button[type="submit"]');
+  }
+
+  getCancelButton() {
+    return cy.contains('Cancel');
+  }
+
+  // ===== LIST =====
+  getProductList() {
     return cy.get('[data-testid="product-item"]');
   }
 
   getProductByName(name) {
-    return cy.contains('[data-testid="product-item"]', name);
+    return cy.contains('[data-testid="product-name"]', name)
+      .parents('[data-testid="product-item"]');
   }
 
-  openProductByName(name) {
-    this.getProductByName(name).find('a').click();
+  getEditButton(productName) {
+    return this.getProductByName(productName)
+      .find('[data-testid="edit-product-btn"]');
   }
 
-  addToCartByName(name) {
-    this.getProductByName(name).find('button[data-testid="add-to-cart"]').click();
+  getDeleteButton(productName) {
+    return this.getProductByName(productName)
+      .find('[data-testid="delete-product-btn"]');
   }
 
-  searchFor(term) {
-    cy.get('[data-testid="product-search"]').clear().type(term);
+  // ===== SEARCH =====
+  searchFor(text) {
+    cy.get('[data-testid="product-search"]').clear().type(text);
   }
 
-  filterByCategory(category) {
-    cy.get('[data-testid="product-filter"]').select(category);
+  // ===== ACTIONS =====
+  createProduct({ name, price, description }) {
+    this.getNameInput().type(name);
+    this.getPriceInput().type(price);
+    if (description) {
+      this.getDescriptionInput().type(description);
+    }
+    this.getSubmitButton().click();
+  }
+
+  updateProduct({ name, price }) {
+    if (name) {
+      this.getNameInput().clear().type(name);
+    }
+    if (price) {
+      this.getPriceInput().clear().type(price);
+    }
+    this.getSubmitButton().click();
   }
 }
-
-export default ProductsPage;
