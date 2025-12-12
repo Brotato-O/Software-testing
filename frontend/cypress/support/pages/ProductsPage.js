@@ -46,7 +46,9 @@ export class ProductsPage {
 
   // ===== SEARCH =====
   searchFor(text) {
-    cy.get('[data-testid="product-search"]').clear().type(text);
+    // type and click the search button to apply the filter
+    cy.get('[data-testid="product-search"]').clear().type(text).should('have.value', text);
+    cy.get('[data-testid="product-search-btn"]').click();
   }
 
   // ===== ACTIONS =====

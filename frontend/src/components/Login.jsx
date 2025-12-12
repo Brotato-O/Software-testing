@@ -187,7 +187,7 @@ const Login = ({ onLoginSuccess }) => {
                     {/* Footer */}
                     <div className="px-8 py-4 bg-gray-50 border-t border-gray-200">
                         <p className="text-center text-sm text-gray-600">
-                            Demo credentials: <span className="font-semibold text-indigo-600">admin / admin123</span>
+                            Demo credentials: <span className="font-semibold text-indigo-600">admin / Admin123</span>
                         </p>
                     </div>
                 </div>

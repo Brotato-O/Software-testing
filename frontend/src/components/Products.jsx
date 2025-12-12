@@ -11,6 +11,8 @@ const Products = ({ onLogout }) => {
         quantity: '',
         category: ''
     });
+    // `searchInput` holds the typed value, `searchTerm` is applied filter when user clicks search
+    const [searchInput, setSearchInput] = useState('');
     const [searchTerm, setSearchTerm] = useState('');
     const [editId, setEditId] = useState(null);
     const [errors, setErrors] = useState({});
@@ -100,6 +102,7 @@ const Products = ({ onLogout }) => {
     };
 
     const filteredProducts = products.filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase()));
+    const displayedProducts = (searchTerm && searchTerm.trim() !== '') ? filteredProducts : products;
 
     return (
         <div className="min-h-screen py-8 px-4">
@@ -280,14 +283,24 @@ const Products = ({ onLogout }) => {
 
                 {/* Products List */}
                 <div className="mb-4 flex items-center space-x-4">
-                    <input
-                        data-testid="product-search"
-                        type="text"
-                        placeholder="Search products..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="px-4 py-2 border rounded-lg w-full md:w-1/3"
-                    />
+                    <div className="flex w-full md:w-1/3">
+                        <input
+                            data-testid="product-search"
+                            type="text"
+                            placeholder="Search products..."
+                            value={searchInput}
+                            onChange={(e) => setSearchInput(e.target.value)}
+                            onKeyDown={(e) => { if (e.key === 'Enter') setSearchTerm(searchInput); }}
+                            className="px-4 py-2 border rounded-l-lg w-full"
+                        />
+                        <button
+                            data-testid="product-search-btn"
+                            onClick={() => setSearchTerm(searchInput)}
+                            className="px-4 py-2 bg-indigo-600 text-white rounded-r-lg ml-2"
+                        >
+                            SEARCH
+                        </button>
+                    </div>
                 </div>
                 <div className="bg-white rounded-2xl shadow-lg p-8">
                     <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center justify-between">
@@ -298,14 +311,14 @@ const Products = ({ onLogout }) => {
                             Product List
                         </span>
                         <span className="text-sm font-normal text-gray-500 bg-gray-100 px-4 py-2 rounded-full">
-                            {products && products.length > 0
-                                ? `${products.length} ${products.length === 1 ? 'Product' : 'Products'}`
+                            {displayedProducts && displayedProducts.length > 0
+                                ? `${displayedProducts.length} ${displayedProducts.length === 1 ? 'Product' : 'Products'}`
                                 : "0 Products"
                             }
                         </span>
                     </h2>
 
-                    { products?.length===0 ? (
+                    { displayedProducts?.length===0 ? (
                         <div className="text-center py-16">
                             <svg className="w-24 h-24 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
@@ -315,7 +328,7 @@ const Products = ({ onLogout }) => {
                         </div>
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {products && products.map(product => (
+                            {displayedProducts && displayedProducts.map(product => (
                                 <div
                                     key={product.id}
                                     className="bg-gradient-to-br from-white to-gray-50 border border-gray-200 rounded-xl p-6 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"

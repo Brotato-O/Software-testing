@@ -51,9 +51,11 @@ export const validateProduct = (product) => {
         errors.description = 'Mo ta khong duoc vuot qua 500 ky tu';
     }
 
-    // Validate category
-    if (!product.category || product.category.trim() === '') {
-        errors.category = 'Danh muc khong duoc de trong';
+    // Validate category (optional in UI). Only validate if field exists and is non-empty.
+    if (product.hasOwnProperty('category') && product.category !== null && product.category !== undefined && product.category !== '') {
+        if (product.category.trim() === '') {
+            errors.category = 'Danh muc khong duoc de trong';
+        }
     }
 
     return errors;
