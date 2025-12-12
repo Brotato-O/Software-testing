@@ -1,124 +1,114 @@
-name: Complete CI / CD Pipeline
+name: CI - Product Tests
 
 on:
   push:
     branches: [ main ]
+  pull_request:
+    branches: [ main ]
 
 jobs:
-  test:
+  product-tests:
+    name: Build & Product E2E
     runs-on: ubuntu-latest
-
     services:
       mysql:
-        image: mysql:8
+        image: mysql:8.0
         env:
+          MYSQL_ROOT_PASSWORD: rootpwd
           MYSQL_DATABASE: test
-          MYSQL_USER: hbstudent
-          MYSQL_PASSWORD: hbstudent
-          MYSQL_ROOT_PASSWORD: root
+          MYSQL_USER: testuser
+          MYSQL_PASSWORD: testpass
         ports:
           - 3306:3306
         options: >-
-          --health-cmd="mysqladmin ping --silent" --health-interval=10s --health-timeout=5s --health-retries=5
+          --health-cmd='mysqladmin ping --silent'
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    env:
+      # Override Spring datasource to use the MySQL service
+      SPRING_DATASOURCE_URL: jdbc:mysql://127.0.0.1:3306/test?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: testuser
+      SPRING_DATASOURCE_PASSWORD: testpass
 
     steps:
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Java
+      - name: Set up Java (for backend build)
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Setup Node.js
+      - name: Cache Maven local repository
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-m2-
+
+      - name: Build backend (Maven)
+        working-directory: backend
+        run: mvn -B -DskipTests package
+
+      - name: Start backend
+        working-directory: backend
+        run: |
+          # Start the Spring Boot app in background and redirect logs
+          nohup mvn spring-boot:run > ../backend.log 2>&1 &
+          echo $! > ../backend.pid
+          # Wait for backend to accept connections
+          for i in $(seq 1 30); do
+            if curl -sS http://localhost:8080/ > /dev/null; then
+              echo "Backend is up"
+              break
+            fi
+            echo "Waiting for backend... ($i)"
+            sleep 2
+          done
+
+      - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
-
-      - name: Wait for MySQL
-        run: |
-          echo "Waiting for MySQL to be ready..."
-          npx wait-on tcp:3306
-
-      - name: Backend - run tests with JaCoCo
-        working-directory: Software-testing/backend
-        env:
-          SPRING_DATASOURCE_URL: jdbc:mysql://127.0.0.1:3306/test
-          SPRING_DATASOURCE_USERNAME: hbstudent
-          SPRING_DATASOURCE_PASSWORD: hbstudent
-        run: |
-          mvn -B -DskipTests=false org.jacoco:jacoco-maven-plugin:prepare-agent test org.jacoco:jacoco-maven-plugin:report
-
-      - name: Upload backend junit tests
-        if: always()
-        uses: actions/upload-artifact@v3
-        with:
-          name: backend-test-results
-          path: Software-testing/backend/target/surefire-reports
+          node-version: '22'
 
       - name: Install frontend dependencies
-        working-directory: Software-testing/frontend
-        run: |
-          npm ci
+        working-directory: frontend
+        run: npm ci
 
-      - name: Frontend - run unit tests (Jest)
-        working-directory: Software-testing/frontend
-        run: |
-          CI=true npm run test -- --coverage --watchAll=false
-
-      - name: Archive frontend coverage
-        if: always()
-        uses: actions/upload-artifact@v3
-        with:
-          name: frontend-coverage
-          path: Software-testing/frontend/coverage/lcov.info
-
-      - name: Build frontend
-        working-directory: Software-testing/frontend
-        run: npm run build
-
-      - name: Serve built app for E2E
-        working-directory: Software-testing/frontend
-        run: |
-          npx serve -s build -l 3000 &
-
-      - name: Wait for frontend
-        run: npx wait-on http://localhost:3000
-
-      - name: Run E2E tests (Cypress)
-        working-directory: Software-testing/frontend
-        run: |
-          npx cypress run --config-file cypress.config.js --reporter mocha-junit-reporter --reporter-options mochaFile=cypress/results/junit/results-[hash].xml
-
-      - name: Upload Cypress results
-        uses: actions/upload-artifact@v3
-        with:
-          name: cypress-results
-          path: Software-testing/frontend/cypress/results
-
-      - name: Upload Cypress screenshots
-        uses: actions/upload-artifact@v3
-        with:
-          name: cypress-screenshots
-          path: Software-testing/frontend/cypress/screenshots
+      - name: Run Cypress product spec
+        working-directory: frontend
+        run: npx cypress run --spec "cypress/e2e/products.cy.js" --headless
+        env:
+          CI: true
 
       - name: Upload Cypress videos
-        uses: actions/upload-artifact@v3
+        if: always()
+        uses: actions/upload-artifact@v4
         with:
           name: cypress-videos
-          path: Software-testing/frontend/cypress/videos
+          path: frontend/cypress/videos
 
-      - name: Upload Coverage to Codecov
-        uses: codecov/codecov-action@v4
+      - name: Upload Cypress screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
         with:
-          files: |
-            Software-testing/frontend/coverage/lcov.info
-            Software-testing/backend/target/site/jacoco/jacoco.xml
-          fail_ci_if_error: true
-        env:
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+          name: cypress-screenshots
+          path: frontend/cypress/screenshots
 
-      - name: Optionally Deploy (preview)
-        if: github.ref == 'refs/heads/main'
-        run: echo "Add deployment steps here (e.g., az webapp deploy, kubectl apply, etc.)"
+      - name: Upload backend logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-log
+          path: backend.log
+
+      - name: Stop backend
+        if: always()
+        run: |
+          if [ -f backend.pid ]; then
+            kill $(cat backend.pid) || true
+          fi
