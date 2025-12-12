@@ -29,17 +29,18 @@ public class SecurityConfig {
         http.authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/auth/login").permitAll()
                 .requestMatchers("/api/auth/**").permitAll()
+                .requestMatchers("/api/products/**").permitAll()
                 .anyRequest().authenticated());
 
         // ---- Tắt form login và logout mặc định
-        http.formLogin(login -> login.disable());
-        http.logout(logout -> logout.disable());
+        // http.formLogin(login -> login.disable());
+        // http.logout(logout -> logout.disable());
 
         // Security headers
         http.headers(headers -> {
             headers.contentSecurityPolicy(
                     "default-src 'self'; script-src 'self'; style-src 'self'; object-src 'none';");
-            headers.referrerPolicy(policy -> policy.policy(ReferrerPolicyHeaderWriter.ReferrerPolicy.SAME_ORIGIN));
+             headers.referrerPolicy(policy -> policy.policy(ReferrerPolicyHeaderWriter.ReferrerPolicy.SAME_ORIGIN));
             headers.addHeaderWriter((request, response) -> {
                 response.setHeader("X-XSS-Protection", "1; mode=block");
             });

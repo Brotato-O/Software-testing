@@ -42,6 +42,7 @@ const Products = ({ onLogout }) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        console.log(formData);
         // Validate dữ liệu phía frontend bằng validateProduct
         const fieldErrors = validateProduct(formData);
         if (Object.keys(fieldErrors).length > 0) {
